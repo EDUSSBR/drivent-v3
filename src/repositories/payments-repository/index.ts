@@ -8,6 +8,13 @@ async function findPaymentByTicketId(ticketId: number) {
     },
   });
 }
+async function findPaymentsByTicketId(ticketId: number) {
+  return prisma.payment.findMany({
+    where: {
+      ticketId,
+    },
+  });
+}
 
 async function createPayment(ticketId: number, params: PaymentParams) {
   return prisma.payment.create({
@@ -18,4 +25,4 @@ async function createPayment(ticketId: number, params: PaymentParams) {
   });
 }
 
-export default { findPaymentByTicketId, createPayment };
+export default { findPaymentByTicketId, createPayment, findPaymentsByTicketId };
