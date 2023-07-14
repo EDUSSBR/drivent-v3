@@ -13,17 +13,17 @@ async function checkIfUserCanGetHotel(userId: number) {
   const ticket = await ticketsRepository.findTicketAndPaymentByEnrollmentId(enrollment.id);
 
   if (!ticket) throw notFoundError();
-  if (!ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+  if (!ticket.TicketType.isRemote || !ticket.TicketType.includesHotel || ticket.status !== 'PAID') {
     throw paymentRequiredError();
   }
-  const payment = await paymentsRepository.findPaymentsByTicketId(ticket.id);
-  let total = 0;
-  for (let i = 0; i < payment.length; i++) {
-    total += payment[i].value;
-  }
-  if (ticket.TicketType.price !== total) {
-    throw paymentRequiredError();
-  }
+  // const payment = await paymentsRepository.findPaymentsByTicketId(ticket.id);
+  // let total = 0;
+  // for (let i = 0; i < payment.length; i++) {
+  //   total += payment[i].value;
+  // }
+  // if (ticket.TicketType.price !== total) {
+  //   throw paymentRequiredError();
+  // }
 }
 
 async function checkIfFoundHotels(hotelPromise: Promise<Hotel | Hotel[]>) {
