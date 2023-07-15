@@ -1,8 +1,7 @@
-import { Hotel, Room } from '@prisma/client';
+import { Hotel } from '@prisma/client';
 import { notFoundError } from '@/errors';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import hotelsRepository from '@/repositories/hotels-repository';
-import paymentsRepository from '@/repositories/payments-repository';
 import { GetRoomsByHotelId } from '@/protocols';
 import ticketsRepository from '@/repositories/tickets-repository';
 import { paymentRequiredError } from '@/errors/payment-required-error';
@@ -13,7 +12,7 @@ async function checkIfUserCanGetHotel(userId: number) {
   const ticket = await ticketsRepository.findTicketAndPaymentByEnrollmentId(enrollment.id);
 
   if (!ticket) throw notFoundError();
-  if (!ticket.TicketType.isRemote || !ticket.TicketType.includesHotel || ticket.status !== 'PAID') {
+  if (ticket.TicketType.isRemote || !ticket.TicketType.includesHotel || ticket.status !== 'PAID') {
     throw paymentRequiredError();
   }
   // const payment = await paymentsRepository.findPaymentsByTicketId(ticket.id);
@@ -27,9 +26,9 @@ async function checkIfUserCanGetHotel(userId: number) {
 }
 
 async function checkIfFoundHotels(hotelPromise: Promise<Hotel | Hotel[]>) {
-  await hotelPromise;
-  if (Array.isArray(hotelPromise) && hotelPromise.length === 0) throw notFoundError();
-  if (!hotelPromise) throw notFoundError();
+  const hotel = await hotelPromise;
+  if (Array.isArray(hotel) && hotel.length === 0) throw notFoundError();
+  if (!hotel) throw notFoundError();
 }
 
 async function getHotels(userId: number): Promise<Hotel[]> {
