@@ -1,7 +1,13 @@
 import * as jwt from 'jsonwebtoken';
-import { User } from '@prisma/client';
+import { TicketStatus, User } from '@prisma/client';
 
-import { createUser } from './factories';
+import {
+  CreateTicketTypeFactory,
+  createEnrollmentWithAddress,
+  createGenericTicketType,
+  createTicket,
+  createUser,
+} from './factories';
 import { createSession } from './factories/sessions-factory';
 import { prisma } from '@/config';
 
@@ -26,3 +32,22 @@ export async function generateValidToken(user?: User) {
 
   return token;
 }
+
+export const generateUserWithEnrollment = async () => {
+  const user = await createUser();
+  const enrollment = Promise.resolve(await createEnrollmentWithAddress(user));
+  const token = await generateValidToken(user);
+  return { user, enrollment, token };
+};
+
+type GenerateUserWithEnrollmentAndTicket = CreateTicketTypeFactory & { ticketStatus: TicketStatus };
+export const generateUserWithEnrollmentAndTicket = async ({
+  isRemote,
+  includesHotel,
+  ticketStatus,
+}: GenerateUserWithEnrollmentAndTicket) => {
+  const { user, enrollment, token } = await generateUserWithEnrollment();
+  const ticketType = await createGenericTicketType({ isRemote, includesHotel });
+  const ticket = await createTicket((await enrollment).id, ticketType.id, ticketStatus);
+  return { user, enrollment, token, ticketType, ticket };
+};

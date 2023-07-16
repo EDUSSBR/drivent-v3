@@ -64,3 +64,21 @@ export type InputTicketBody = {
 };
 
 export type GetRoomsByHotelId = { userId: number; hotelId: number };
+
+export type RoomWithDateFormated = {
+  id: number;
+  name: string;
+  capacity: number;
+  hotelId: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type hotelWithRooms = {
+  id: number;
+  name: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+  Rooms: RoomWithDateFormated[];
+};

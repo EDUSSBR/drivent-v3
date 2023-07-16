@@ -2,7 +2,7 @@ import { Hotel } from '@prisma/client';
 import { notFoundError } from '@/errors';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import hotelsRepository from '@/repositories/hotels-repository';
-import { GetRoomsByHotelId } from '@/protocols';
+import { GetRoomsByHotelId, RoomWithDateFormated, hotelWithRooms } from '@/protocols';
 import ticketsRepository from '@/repositories/tickets-repository';
 import { paymentRequiredError } from '@/errors/payment-required-error';
 
@@ -37,11 +37,26 @@ async function getHotels(userId: number): Promise<Hotel[]> {
   await checkIfFoundHotels(hotels);
   return hotels;
 }
-async function getRoomsByHotelsId({ userId, hotelId }: GetRoomsByHotelId): Promise<Hotel> {
-  const hotelWithRoom = hotelsRepository.findHotelWithRoomsById(hotelId);
+
+async function getRoomsByHotelsId({ userId, hotelId }: GetRoomsByHotelId): Promise<hotelWithRooms> {
+  const hotelWithRooms = hotelsRepository.findHotelWithRoomsById(hotelId);
   await checkIfUserCanGetHotel(userId);
-  await checkIfFoundHotels(hotelWithRoom);
-  return hotelWithRoom;
+  await checkIfFoundHotels(hotelWithRooms);
+  const { id, name, image, createdAt, updatedAt, Rooms } = await hotelWithRooms;
+  const RoomsWithFormattedDate: RoomWithDateFormated[] = Rooms.map((room) => ({
+    ...room,
+    createdAt: new Date(room.createdAt).toISOString(),
+    updatedAt: new Date(room.updatedAt).toISOString(),
+  }));
+
+  return {
+    id,
+    name,
+    image,
+    createdAt: new Date(createdAt).toISOString(),
+    updatedAt: new Date(updatedAt).toISOString(),
+    Rooms: RoomsWithFormattedDate,
+  };
 }
 
 const hotelsService = { getHotels, getRoomsByHotelsId };
